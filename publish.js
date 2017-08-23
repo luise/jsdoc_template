@@ -490,23 +490,28 @@ exports.publish = function(taffyData, opts, tutorials) {
         });
     }
 
+    // Generate the URLs (using the ID) to use to link to different parts of the
+    // docs.  This must be done before the docs are generated below; otherwise,
+    // doc generation will automatically create the URLs, and they'll be in the
+    // wrong format.
     data().each(function(doclet) {
-        var docletPath;
-        var url = helper.createLink(doclet);
-
-        helper.registerLink(doclet.longname, url);
-    });
-
-    data().each(function(doclet) {
-        var url = helper.longnameToUrl[doclet.longname];
-
-        if (url.indexOf('#') > -1) {
-            doclet.id = helper.longnameToUrl[doclet.longname].split(/#/).pop();
+        // Create a URL in the typical JSDoc format. This URL is not correct,
+        // because unlike the default JSDoc format, we generate all of the HTML
+        // in a single page.  However, the JSDoc URL is a useful starting point
+        // for generating an ID to use for each part of the page.
+        var dummyUrl = helper.createLink(doclet);
+        if (dummyUrl.indexOf('#') > -1) {
+            doclet.id = dummyUrl.split(/#/).pop();
         }
         else {
             doclet.id = doclet.name;
         }
 
+        var url = encodeURI('#' + doclet.id);
+        helper.registerLink(doclet.longname, url);
+    });
+
+    data().each(function(doclet) {
         if ( needsSignature(doclet) ) {
             addSignatureParams(doclet);
             addSignatureReturns(doclet);
