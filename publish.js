@@ -18,6 +18,8 @@ var hasOwnProp = Object.prototype.hasOwnProperty;
 var data;
 var view;
 
+var outputHtml = [];
+
 var outdir = path.normalize(env.opts.destination);
 
 function find(spec) {
@@ -220,7 +222,7 @@ function getPathFromDoclet(doclet) {
         doclet.meta.filename;
 }
 
-function generate(title, docs, filename, resolveLinks) {
+function generate(title, docs, resolveLinks) {
     var docData;
     var html;
     var outpath;
@@ -233,14 +235,13 @@ function generate(title, docs, filename, resolveLinks) {
         docs: docs
     };
 
-    outpath = path.join(outdir, filename);
     html = view.render('container.tmpl', docData);
 
     if (resolveLinks) {
         html = helper.resolveLinks(html); // turn {@link foo} into <a href="foodoc.html">foo</a>
     }
 
-    fs.writeFileSync(outpath, html, 'utf8');
+    outputHtml.push(html);
 }
 
 /**
@@ -386,8 +387,6 @@ exports.publish = function(taffyData, opts, tutorials) {
     var externals;
     var files;
     var fromDir;
-    var globalUrl;
-    var indexUrl;
     var interfaces;
     var members;
     var mixins;
@@ -408,20 +407,6 @@ exports.publish = function(taffyData, opts, tutorials) {
 
     templatePath = path.normalize(opts.template);
     view = new template.Template( path.join(templatePath, 'tmpl') );
-
-    // claim some special filenames in advance, so the All-Powerful Overseer of Filename Uniqueness
-    // doesn't try to hand them out later
-    indexUrl = helper.getUniqueFilename('index');
-    // don't call registerLink() on this one! 'index' is also a valid longname
-
-    globalUrl = helper.getUniqueFilename('global');
-    helper.registerLink('global', globalUrl);
-
-    // set up templating
-    view.layout = conf.default.layoutFile ?
-        path.getResourcePath(path.dirname(conf.default.layoutFile),
-            path.basename(conf.default.layoutFile) ) :
-        'layout.tmpl';
 
     // set up tutorials for helper
     helper.setTutorials(tutorials);
@@ -559,7 +544,7 @@ exports.publish = function(taffyData, opts, tutorials) {
     view.nav = buildNav(members);
     attachModuleSymbols( find({ longname: {left: 'module:'} }), members.modules );
 
-    if (members.globals.length) { generate('Global', [{kind: 'globalobj'}], globalUrl); }
+    if (members.globals.length) { generate('Global', [{kind: 'globalobj'}]); }
 
     // index page displays information from package.json and lists files
     files = find({kind: 'file'});
@@ -572,7 +557,7 @@ exports.publish = function(taffyData, opts, tutorials) {
                 readme: opts.readme,
                 longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page'
             }]
-        ).concat(files), indexUrl);
+        ).concat(files));
 
     // set up the lists that we'll use to generate pages
     classes = taffy(members.classes);
@@ -591,27 +576,27 @@ exports.publish = function(taffyData, opts, tutorials) {
         var myNamespaces = helper.find(namespaces, {longname: longname});
 
         if (myModules.length) {
-            generate('Module: ' + myModules[0].name, myModules, helper.longnameToUrl[longname]);
+            generate('Module: ' + myModules[0].name, myModules);
         }
 
         if (myClasses.length) {
-            generate('Class: ' + myClasses[0].name, myClasses, helper.longnameToUrl[longname]);
+            generate('Class: ' + myClasses[0].name, myClasses);
         }
 
         if (myNamespaces.length) {
-            generate('Namespace: ' + myNamespaces[0].name, myNamespaces, helper.longnameToUrl[longname]);
+            generate('Namespace: ' + myNamespaces[0].name, myNamespaces);
         }
 
         if (myMixins.length) {
-            generate('Mixin: ' + myMixins[0].name, myMixins, helper.longnameToUrl[longname]);
+            generate('Mixin: ' + myMixins[0].name, myMixins);
         }
 
         if (myExternals.length) {
-            generate('External: ' + myExternals[0].name, myExternals, helper.longnameToUrl[longname]);
+            generate('External: ' + myExternals[0].name, myExternals);
         }
 
         if (myInterfaces.length) {
-            generate('Interface: ' + myInterfaces[0].name, myInterfaces, helper.longnameToUrl[longname]);
+            generate('Interface: ' + myInterfaces[0].name, myInterfaces);
         }
     });
 
@@ -629,7 +614,7 @@ exports.publish = function(taffyData, opts, tutorials) {
         // yes, you can use {@link} in tutorials too!
         html = helper.resolveLinks(html); // turn {@link foo} into <a href="foodoc.html">foo</a>
 
-        fs.writeFileSync(tutorialPath, html, 'utf8');
+        outputHtml.push(html);
     }
 
     // tutorials can have only one parent so there is no risk for loops
@@ -641,4 +626,8 @@ exports.publish = function(taffyData, opts, tutorials) {
     }
 
     saveChildren(tutorials);
+
+    var allHtml = outputHtml.join('');
+    var outpath = path.join(outdir, '_jsdoc.erb');
+    fs.writeFileSync(outpath, allHtml, 'utf8');
 };
