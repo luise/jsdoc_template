@@ -506,7 +506,10 @@ exports.publish = function(taffyData, opts, tutorials) {
 
     // copy the template's static files to outdir
     fromDir = path.join(templatePath, 'static');
-    staticFiles = fs.ls(fromDir, 3);
+    staticFiles = []
+    if (fs.existsSync(fromDir)) {
+        fs.ls(fromDir, 3);
+    }
 
     staticFiles.forEach(function(fileName) {
         var toDir = fs.toDir( fileName.replace(fromDir, outdir) );
