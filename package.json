@@ -1,0 +1,12 @@
+{
+  "name": "@quilt/jsdoc_template",
+  "repository" : {
+    "type" : "git",
+    "url" : "https://github.com/quilt/jsdoc_template.git"
+  },
+  "version": "0.0.1",
+  "license": "MIT",
+  "dependencies": {
+    "jsdoc": "^3.5.4"
+  }
+}
