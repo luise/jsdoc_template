@@ -4,7 +4,7 @@ var self = this;
 ?>
 <?js if (data.kind !== 'module' && !data.hideconstructor) { ?>
     <?js if (data.kind === 'class' && data.classdesc) { ?>
-    <h2>Constructor</h2>
+    <h3>Constructor</h3>
     <?js } ?>
 
     <?js if (data.kind !== 'namespace') { ?>
@@ -18,9 +18,9 @@ var self = this;
 <?js } ?>
 
 <?js if (data.kind !== 'module' && data.description && !data.hideconstructor) { ?>
-<div class="description">
+<p>
     <?js= data.description ?>
-</div>
+</p>
 <?js } ?>
 
 <?js if (data.augments && data.alias && data.alias.indexOf('module:') === 0) { ?>
