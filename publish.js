@@ -243,30 +243,6 @@ function generate(title, docs, filename, resolveLinks) {
     fs.writeFileSync(outpath, html, 'utf8');
 }
 
-function generateSourceFiles(sourceFiles, encoding) {
-    encoding = encoding || 'utf8';
-    Object.keys(sourceFiles).forEach(function(file) {
-        var source;
-        // links are keyed to the shortened path in each doclet's `meta.shortpath` property
-        var sourceOutfile = helper.getUniqueFilename(sourceFiles[file].shortened);
-
-        helper.registerLink(sourceFiles[file].shortened, sourceOutfile);
-
-        try {
-            source = {
-                kind: 'source',
-                code: helper.htmlsafe( fs.readFileSync(sourceFiles[file].resolved, encoding) )
-            };
-        }
-        catch (e) {
-            logger.error('Error while generating source file %s: %s', file, e.message);
-        }
-
-        generate('Source: ' + sourceFiles[file].shortened, [source], sourceOutfile,
-            false);
-    });
-}
-
 /**
  * Look for classes or functions with the same name as modules (which indicates that the module
  * exports only that class or function), then attach the classes or functions to the `module`
@@ -417,11 +393,8 @@ exports.publish = function(taffyData, opts, tutorials) {
     var mixins;
     var modules;
     var namespaces;
-    var outputSourceFiles;
     var packageInfo;
     var packages;
-    var sourceFilePaths = [];
-    var sourceFiles = {};
     var staticFileFilter;
     var staticFilePaths;
     var staticFiles;
@@ -483,18 +456,6 @@ exports.publish = function(taffyData, opts, tutorials) {
                 doclet.see[i] = hashToLink(doclet, seeItem);
             });
         }
-
-        // build a list of source files
-        if (doclet.meta) {
-            sourcePath = getPathFromDoclet(doclet);
-            sourceFiles[sourcePath] = {
-                resolved: sourcePath,
-                shortened: null
-            };
-            if (sourceFilePaths.indexOf(sourcePath) === -1) {
-                sourceFilePaths.push(sourcePath);
-            }
-        }
     });
 
     // update outdir if necessary, then create outdir
@@ -544,23 +505,11 @@ exports.publish = function(taffyData, opts, tutorials) {
         });
     }
 
-    if (sourceFilePaths.length) {
-        sourceFiles = shortenPaths( sourceFiles, path.commonPrefix(sourceFilePaths) );
-    }
     data().each(function(doclet) {
         var docletPath;
         var url = helper.createLink(doclet);
 
         helper.registerLink(doclet.longname, url);
-
-        // add a shortened version of the full path
-        if (doclet.meta) {
-            docletPath = getPathFromDoclet(doclet);
-            docletPath = sourceFiles[docletPath].shortened;
-            if (docletPath) {
-                doclet.meta.shortpath = docletPath;
-            }
-        }
     });
 
     data().each(function(doclet) {
@@ -599,25 +548,16 @@ exports.publish = function(taffyData, opts, tutorials) {
     members = helper.getMembers(data);
     members.tutorials = tutorials.children;
 
-    // output pretty-printed source files by default
-    outputSourceFiles = conf.default && conf.default.outputSourceFiles !== false;
-
     // add template helpers
     view.find = find;
     view.linkto = linkto;
     view.resolveAuthorLinks = resolveAuthorLinks;
     view.tutoriallink = tutoriallink;
     view.htmlsafe = htmlsafe;
-    view.outputSourceFiles = outputSourceFiles;
 
     // once for all
     view.nav = buildNav(members);
     attachModuleSymbols( find({ longname: {left: 'module:'} }), members.modules );
-
-    // generate the pretty-printed source files first so other pages can link to them
-    if (outputSourceFiles) {
-        generateSourceFiles(sourceFiles, opts.encoding);
-    }
 
     if (members.globals.length) { generate('Global', [{kind: 'globalobj'}], globalUrl); }
 
