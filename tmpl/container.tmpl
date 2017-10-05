@@ -20,14 +20,6 @@
     <h2 id="<?js= doc.id ?>"><?js= title ?></h2>
 
     <?js if (!doc.longname || doc.kind !== 'module') { ?>
-        <h3><?js if (doc.attribs) { ?><span class="attribs"><?js= doc.attribs ?></span><?js }
-            if (doc.ancestors && doc.ancestors.length) { ?>
-            <span class="ancestors"><?js= doc.ancestors.join('') ?></span><?js
-         }
-        ?><?js= doc.name ?><?js
-         if (doc.variation) { ?>
-            <sup class="variation"><?js= doc.variation ?></sup><?js }
-         if (doc.signature && !doc.hideconstructor) { ?><?js= doc.signature ?><?js } ?></h3>
         <?js if (doc.classdesc) { ?>
             <p><?js= doc.classdesc ?></p>
         <?js } ?>
