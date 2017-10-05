@@ -102,16 +102,16 @@ var self = this;
 } } ?>
 
 <?js if (data.returns && returns.length) { ?>
-<h5>Returns:</h5>
-<?js if (returns.length > 1) { ?><ul><?js
+<?js if (returns.length > 1) { ?>
+  <h5>Returns:</h5><ul>
+  <?js
     returns.forEach(function(r) { ?>
         <li><?js= self.partial('returns.tmpl', r) ?></li>
     <?js });
-?></ul><?js } else {
-    returns.forEach(function(r) { ?>
-        <?js= self.partial('returns.tmpl', r) ?>
-    <?js });
-} } ?>
+?></ul><?js } else if (returns[0].type.names && returns[0].type.names[0] != 'void') { ?>
+  <h5>Returns:</h5>
+      <?js= self.partial('returns.tmpl', returns[0]) ?>
+<?js } } ?>
 
 <?js if (data.yields && yields.length) { ?>
 <h5>Yields:</h5>
