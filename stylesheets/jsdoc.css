@@ -1,0 +1,18 @@
+// Pad function signatures.
+h4.name {
+  margin-top: 2em;
+  padding-top: 2em;
+  border-top: 1px solid #ccc;
+}
+
+// Skip the spacing and border when the signature ('name') is right after
+// a title.
+h2 + h4.name, h3.subsection-title + h4.name {
+  margin-top: 0;
+  padding-top: 1em;
+  border-top: none;
+}
+
+h2 + h4.name {
+  padding-top: 0.1em;
+}
