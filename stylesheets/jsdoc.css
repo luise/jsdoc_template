@@ -16,3 +16,8 @@ h2 + h4.name, h3.subsection-title + h4.name {
 h2 + h4.name {
   padding-top: 0.1em;
 }
+
+.optional {
+  font-size: 0.8em;
+  font-style: italic;
+}
