@@ -1,7 +1,7 @@
 <?js
     var params = obj;
 
-    /* sort subparams under their parent params (like opts.classname) */
+    /* list subparams as parentParam.subparam */
     var parentParam = null;
     params.forEach(function(param, i) {
         var paramRegExp;
@@ -12,6 +12,9 @@
 
         if (parentParam && parentParam.name && param.name) {
             try {
+                // this won't work if there is a nested subparam -- e.g.
+                // container.opts.opts -- but such a function would be terrible
+                // anyways, so we shouldn't end up needing it.
                 paramRegExp = new RegExp('^(?:' + parentParam.name + '(?:\\[\\])*)\\.(.+)$');
             }
             catch (e) {
@@ -21,10 +24,7 @@
             }
 
             if ( paramRegExp.test(param.name) ) {
-                param.name = RegExp.$1;
-                parentParam.subparams = parentParam.subparams || [];
-                parentParam.subparams.push(param);
-                params[i] = null;
+                parentParam.hasSubparams = true;
             }
             else {
                 parentParam = param;
@@ -82,7 +82,7 @@
     <?js
         var self = this;
         params.forEach(function(param) {
-            if (!param) { return; }
+            if (!param || param.hasSubparams ) { return; }
     ?>
 
         <tr>
@@ -120,10 +120,7 @@
                 </td>
             <?js } ?>
 
-            <td class="description last"><?js= param.description ?><?js if (param.subparams) { ?>
-                <h6>Properties</h6>
-                <?js= self.partial('params.tmpl', param.subparams) ?>
-            <?js } ?></td>
+            <td class="description last"><?js= param.description ?></td>
         </tr>
 
     <?js }); ?>
