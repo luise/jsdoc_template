@@ -81,10 +81,6 @@ function needsSignature(doclet) {
 function getSignatureAttributes(item) {
     var attributes = [];
 
-    if (item.optional) {
-        attributes.push('opt');
-    }
-
     if (item.nullable === true) {
         attributes.push('nullable');
     }
@@ -95,7 +91,7 @@ function getSignatureAttributes(item) {
     return attributes;
 }
 
-function updateItemName(item) {
+function updateItemName(item, index) {
     var attributes = getSignatureAttributes(item);
     var itemName = item.name || '';
 
@@ -106,6 +102,13 @@ function updateItemName(item) {
     if (attributes && attributes.length) {
         itemName = util.format( '%s<span class="signature-attributes">%s</span>', itemName,
             attributes.join(', ') );
+    }
+
+    if (index !== 0) {
+        itemName = util.format(', %s', itemName );
+    }
+    if (item.optional) {
+      itemName = util.format('\[%s\]', itemName );
     }
 
     return itemName;
@@ -152,7 +155,7 @@ function addNonParamAttributes(items) {
 function addSignatureParams(f) {
     var params = f.params ? addParamAttributes(f.params) : [];
 
-    f.signature = util.format( '%s(%s)', (f.signature || ''), params.join(', ') );
+    f.signature = util.format( '%s(%s)', (f.signature || ''), params.join('') );
 }
 
 function addSignatureReturns(f) {
