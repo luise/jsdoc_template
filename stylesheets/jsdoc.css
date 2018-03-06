@@ -5,6 +5,11 @@ h4.name {
   border-top: 1px solid #ccc;
 }
 
+// Make function signatures larger than normal code.
+h4.name > code {
+  font-size: 14;
+}
+
 // Skip the spacing and border when the signature ('name') is right after
 // a title.
 h2 + h4.name, h3.subsection-title + h4.name {
