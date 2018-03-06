@@ -109,8 +109,7 @@ var self = this;
         <li><?js= self.partial('returns.tmpl', r) ?></li>
     <?js });
 ?></ul><?js } else if (returns[0].type.names && returns[0].type.names[0] != 'void') { ?>
-  <h5>Returns:</h5>
-      <?js= self.partial('returns.tmpl', returns[0]) ?>
+  <p><strong>Returns:</strong> <?js= returns[0].description ?> </p>
 <?js } } ?>
 
 <?js if (data.yields && yields.length) { ?>
